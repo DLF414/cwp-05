@@ -1,17 +1,21 @@
 const extras = require('../extras');
+const validator = require('../validator');
 let _articles = require("../Content/articles.json");
 const comments = exports;
 
 comments.create = function (req, res, payload, cb) {
-    let index = _articles.findIndex(article => article.id === payload.articleId);
-
-    if (index !== -1) {
-        payload.id = extras.generateId();
-        _articles[index].comments.push(payload);
-        cb(null, _articles[index].comments[_articles[index].comments.length - 1]);
-        extras.saveArticles(_articles);
+    if (validator.isCommentValid(payload)) {
+        let index = _articles.findIndex(article => article.id === payload.articleId);
+        if (index !== -1) {
+            payload.id = extras.generateId();
+            _articles[index].comments.push(payload);
+            cb(null, _articles[index].comments[_articles[index].comments.length - 1]);
+            extras.saveArticles(_articles);
+        }
+        else {
+            cb({code: 405, message: 'Article not found'});
+        }
     }
-
     else {
         cb({code: 405, message: 'Article not found'});
     }

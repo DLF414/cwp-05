@@ -1,4 +1,5 @@
 const extras = require('../extras');
+const validator = require('../validator');
 let _articles = require("../Content/articles.json");
 const articles = exports;
 
@@ -18,22 +19,31 @@ articles.read = function (req, res, payload, cb) {
 };
 
 articles.create = function (req, res, payload, cb) {
-    payload.id = extras.generateId();
-    _articles.push(payload);
-    cb(null, payload);
-    extras.saveArticles(_articles);
-};
-
-articles.update = function (req, res, payload, cb) {
-    let index = _articles.findIndex(article => article.id === payload.id);
-
-    if (index !== -1) {
-        _articles[index] = payload;
+    if (validator.isArticleValid(payload)) {
+        payload.id = extras.generateId();
+        _articles.push(payload);
         cb(null, payload);
         extras.saveArticles(_articles);
     }
     else {
-        cb({code: 405, message: 'Article not found'});
+        cb({code: 400, message: 'Request invalid'});
+    }
+};
+
+articles.update = function (req, res, payload, cb) {
+    if (validator.isArticleValid(payload)) {
+        let index = _articles.findIndex(article => article.id === payload.id);
+        if (index !== -1) {
+            _articles[index] = payload;
+            cb(null, payload);
+            extras.saveArticles(_articles);
+        }
+        else {
+            cb({code: 405, message: 'Article not found'});
+        }
+    }
+    else {
+        cb({code: 400, message: 'Request invalid'});
     }
 };
 

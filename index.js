@@ -1,27 +1,34 @@
 const http = require('http');
-
+const fs = require('fs');
 const hostname = '127.0.0.1';
 const port = 3000;
+const articles = require("./Controllers/articles");
+const comments = require("./Controllers/comments");
 
 const handlers = {
-    '/sum': sum
+    '/api/articles/readAll': articles.readAll,
+    '/api/articles/read':    articles.read,
+    '/api/articles/create':  articles.create,
+    '/api/articles/update':  articles.update,
+    '/api/articles/delete':  articles.delete,
+    '/api/comments/create':  comments.create,
+    '/api/comments/delete':  comments.delete
 };
 
 const server = http.createServer((req, res) => {
     parseBodyJson(req, (err, payload) => {
         const handler = getHandler(req.url);
-
         handler(req, res, payload, (err, result) => {
             if (err) {
                 res.statusCode = err.code;
-                res.setHeader('Content-Type', 'application/json');
+                res.setHeader('Content-Type', 'application/json; charset=utf-8');
                 res.end( JSON.stringify(err) );
 
                 return;
             }
 
             res.statusCode = 200;
-            res.setHeader('Content-Type', 'application/json');
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.end( JSON.stringify(result) );
         });
     });
@@ -35,26 +42,23 @@ function getHandler(url) {
     return handlers[url] || notFound;
 }
 
-function sum(req, res, payload, cb) {
-    const result = { c: payload.a + payload.b };
-
-    cb(null, result);
-}
-
 function notFound(req, res, payload, cb) {
     cb({ code: 404, message: 'Not found'});
 }
 
 function parseBodyJson(req, cb) {
     let body = [];
-
-    req.on('data', function(chunk) {
+    req.on('data', function (chunk) {
         body.push(chunk);
-    }).on('end', function() {
+    }).on('end', function () {
         body = Buffer.concat(body).toString();
-
-        let params = JSON.parse(body);
-
-        cb(null, params);
+        console.log("body : " + body);
+        if (body !== "") {
+            params = JSON.parse(body);
+            cb(null, params);
+        }
+        else {
+            cb(null, null);
+        }
     });
 }

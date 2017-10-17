@@ -1,0 +1,35 @@
+let _articles = require("../articles.json");
+let seed = 0;
+const comments = exports;
+
+comments.create = function (req, res, payload, cb) {
+    let index = _articles.findIndex(article => article.id === payload.articleId);
+
+    if (index !== -1) {
+        payload.id = Date.now() + seed;
+        _articles[index].comments.push(payload);
+        cb(null, _articles[index].comments[_articles[index].comments.length - 1]);
+    }
+
+    else {
+        cb({code: 405, message: 'Article not found'});
+    }
+};
+
+comments.delete = function (req, res, payload, cb) {
+    let index = _articles.findIndex(article => article.id === payload.articleId);
+
+    if (index !== -1) {
+        index = _articles[index].comments.findIndex(comment => comment.id === payload.id);
+        if (index !== -1) {
+            _articles[index].comments.splice(index, 1);
+            cb(null, _articles);
+        }
+        else {
+            cb({code: 406, message: 'Comment not found'});
+        }
+    }
+    else {
+        cb({code: 405, message: 'Article not found'});
+    }
+};

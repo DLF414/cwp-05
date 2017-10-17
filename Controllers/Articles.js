@@ -1,5 +1,5 @@
-let _articles = require("../articles.json");
-let seed = 0;
+const extras = require('../extras');
+let _articles = require("../Content/articles.json");
 const articles = exports;
 
 articles.readAll = function (req, res, payload, cb) {
@@ -18,9 +18,10 @@ articles.read = function (req, res, payload, cb) {
 };
 
 articles.create = function (req, res, payload, cb) {
-    payload.id = Date.now() + seed;
+    payload.id = extras.generateId();
     _articles.push(payload);
     cb(null, payload);
+    extras.saveArticles(_articles);
 };
 
 articles.update = function (req, res, payload, cb) {
@@ -29,6 +30,7 @@ articles.update = function (req, res, payload, cb) {
     if (index !== -1) {
         _articles[index] = payload;
         cb(null, payload);
+        extras.saveArticles(_articles);
     }
     else {
         cb({code: 405, message: 'Article not found'});
@@ -41,6 +43,7 @@ articles.delete = function (req, res, payload, cb) {
     if (index !== -1) {
         _articles.splice(index, 1);
         cb(null, _articles);
+        extras.saveArticles(_articles);
     }
     else {
         cb({code: 405, message: 'Article not found'});

@@ -1,5 +1,5 @@
 const http = require('http');
-const fs = require('fs');
+const extras = require('./extras');
 const hostname = '127.0.0.1';
 const port = 3000;
 const articles = require("./Controllers/articles");
@@ -52,6 +52,7 @@ function parseBodyJson(req, cb) {
         body.push(chunk);
     }).on('end', function () {
         body = Buffer.concat(body).toString();
+        extras.logRequest(req.url, body, new Date().toISOString());
         console.log("body : " + body);
         if (body !== "") {
             params = JSON.parse(body);
